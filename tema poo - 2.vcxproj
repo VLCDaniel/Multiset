@@ -150,7 +150,7 @@
     <ClCompile Include="Comparator.cpp" />
     <ClCompile Include="Nod.cpp" />
     <ClCompile Include="Multiset.cpp" />
-    <ClCompile Include="tema poo - 2.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Comparator.h" />

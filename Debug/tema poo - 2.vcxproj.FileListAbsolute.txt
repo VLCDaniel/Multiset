@@ -1,2 +1,4 @@
 C:\Users\vlasc\source\repos\poo - tema 3\tema poo - 2\Debug\tema poo - 2.exe
 C:\Users\vlasc\source\repos\poo - tema 3\tema poo - 2\Debug\tema poo - 2.pdb
+C:\Users\vlasc\OneDrive\Desktop\Multiset\Debug\tema poo - 2.exe
+C:\Users\vlasc\OneDrive\Desktop\Multiset\Debug\tema poo - 2.pdb
