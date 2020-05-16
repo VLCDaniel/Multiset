@@ -22,17 +22,35 @@ private:
 public:
 	Multiset();
 	void add(T); // adauga un element in multiset
-	void remove(T); // sterge un element din multiset
+	void remove(T, Nod<T>*); // sterge un element din multiset
+	bool exists(T); // verifica daca un element exista in multiset
 
 	friend void update_height(Nod<T>*);
 	friend ostream& operator<<(ostream& out, const Multiset<T, F>& M)
 	{
 		M.RSD(M.root, out);
+		out << '\n';
 		return out;
 	}
 };
 
-template<class T>
+template <class T, class F>
+bool Multiset<T, F>::exists(T x)
+{
+	Nod<T>* aux = this->root;
+	while (aux)
+	{
+		if (F::equals(x, aux->get_info()))
+			return true;
+		if (F::less(x, aux->get_info()))
+			aux = aux->get_left();
+		else
+			aux = aux->get_right();
+	}
+	return false;
+}
+
+template <class T>
 void update_height(Nod<T>* x)
 {
 	if(x)
@@ -108,7 +126,7 @@ void Multiset<T, F>::RSD(Nod<T>* r, ostream& out) const
 {
 	if (r)
 	{
-		out << r->get_info() << ' ' << "Height: " << r->get_height() << '\n';
+		out << r->get_info() << ' ';
 		this->RSD(r->get_left(), out);
 		this->RSD(r->get_right(), out);
 	}
@@ -238,8 +256,13 @@ void Multiset<T, F>::add(T x)
 }
 
 template <class T, class F>
-void Multiset<T, F>::remove(T x)
+void Multiset<T, F>::remove(T x, Nod<T>* r)
 {
+	if (!r)
+	{
+		cout << "Can not remove from an empty Multiset!\n";
+		return;
+	}
 
 }
 
