@@ -9,6 +9,7 @@ private:
 	int height;
 
 public:
+
 	Nod() = default;
 	Nod(T x, int y) : info(x), height(y) { this->left = nullptr; this->right = nullptr; }
 	void set_info(T);
@@ -28,7 +29,7 @@ int Nod<T>::get_height()
 	{
 		return this->height;
 	}
-	return -1;
+	return 0;
 }
 
 template<class T>
