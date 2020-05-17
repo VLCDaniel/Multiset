@@ -11,7 +11,7 @@ private:
 public:
 
 	Nod() = default;
-	Nod(T x, int y) : info(x), height(y) { this->left = nullptr; this->right = nullptr; }
+	Nod(T x, int y) : info(x), height(y) { this->left = nullptr; this->right = nullptr; };
 	void set_info(T);
 	void set_height(int);
 	void set_right(Nod*);
@@ -73,4 +73,3 @@ Nod<T>* Nod<T>::get_right()
 {
 	return this->right;
 }
-

@@ -12,7 +12,10 @@ private:
 	Nod<T>* root; // radacina AVL-ului
 
 	void RSD(Nod<T>*, ostream&) const; // parcurgere recursiva Radacina - Stanga - Dreapta (pentru afisare)
+	void RSD_delete(Nod<T>*); // parcurcere recursiva care sterge nodurile
+	void copy(Nod<T>*, Nod<T>*); // functie recursiva care copiaza elementele din nodul constant in nodul trimis prin referinta
 	void insertrec(Nod<T>*, T); // parcurgerea AVL-ului recursiv pentru inserare
+	void search_rec(Nod<T>*, T, unsigned&) const; // cautarea nodului in Multiset recursiv
 
 	void L_left_rotate(Nod<T>*); // Left rotate pentru fiul stang
 	void L_right_rotate(Nod<T>*); // Right rotate pentru fiul stang
@@ -21,9 +24,13 @@ private:
 
 public:
 	Multiset();
+	Multiset(Multiset&);
+	~Multiset();
 	void add(T); // adauga un element in multiset
 	void remove(T, Nod<T>*); // sterge un element din multiset
-	bool exists(T); // verifica daca un element exista in multiset
+	bool exists(T) const; // verifica daca un element exista in multiset
+	Nod<T>* get_root() const { return this->root; };
+	unsigned aparitions(T) const; // intoarce numarul de aparitii din multiset
 
 	friend void update_height(Nod<T>*);
 	friend ostream& operator<<(ostream& out, const Multiset<T, F>& M)
@@ -35,7 +42,38 @@ public:
 };
 
 template <class T, class F>
-bool Multiset<T, F>::exists(T x)
+void Multiset<T, F>::RSD_delete(Nod<T>* r)
+{
+	if (r)
+	{
+		RSD_delete(r->get_left());
+		RSD_delete(r->get_right());
+		delete r;
+	}
+}
+
+template<class T, class F>
+void Multiset<T, F>::copy(Nod<T>* dest, Nod<T>* source)
+{
+	if (source)
+	{
+		if (source->get_left())
+		{
+			Nod<T>* aux = new Nod<T>(source->get_left()->get_info(), source->get_left()->get_height());
+			dest->set_left(aux);
+		}
+		if (source->get_right())
+		{
+			Nod<T>* aux = new Nod<T>(source->get_right()->get_info(), source->get_right()->get_height());
+			dest->set_right(aux);
+		}
+		copy(dest->get_left(), source->get_left());
+		copy(dest->get_right(), source->get_right());
+	}
+}
+
+template <class T, class F>
+bool Multiset<T, F>::exists(T x) const
 {
 	Nod<T>* aux = this->root;
 	while (aux)
@@ -48,6 +86,15 @@ bool Multiset<T, F>::exists(T x)
 			aux = aux->get_right();
 	}
 	return false;
+}
+
+template<class T, class F>
+unsigned Multiset<T, F>::aparitions(T x) const
+{
+	unsigned nr = 0;
+	Nod<T>* aux = this->root;
+	this->search_rec(aux, x, nr);
+	return nr;
 }
 
 template <class T>
@@ -238,10 +285,37 @@ void Multiset<T, F>::insertrec(Nod<T>* p, T x)  // parcurgere recursiva
 	}
 }
 
+template<class T, class F>
+void Multiset<T, F>::search_rec(Nod<T>* r, T x, unsigned& nr) const
+{
+	if (r)
+	{
+		if (F::equals(r->get_info(), x))
+		{
+			nr++;
+			search_rec(r->get_left(), x, nr);
+			search_rec(r->get_right(), x, nr);
+		}
+		else if (F::less(r->get_info(), x))
+			search_rec(r->get_right(), x, nr);
+		else
+			search_rec(r->get_left(), x, nr);
+	}
+}
+
 template <class T, class F>
 Multiset<T, F>::Multiset()
 {
 	this->root = nullptr;
+}
+
+template<class T, class F>
+Multiset<T, F>::Multiset(Multiset& x)
+{
+	Nod<T>* aux = this->root;
+	this->RSD_delete(aux); // sterg AVL-ul curent
+	this->add(x.get_root()->get_info()); // creez radacina
+	this->copy(this->root, x.get_root()); // copiez elementele recursiv
 }
 
 template <class T, class F>
@@ -266,3 +340,9 @@ void Multiset<T, F>::remove(T x, Nod<T>* r)
 
 }
 
+template <class T, class F>
+Multiset<T, F>::~Multiset()
+{
+	Nod<T>* aux = this->root;
+	this->RSD_delete(aux);
+}

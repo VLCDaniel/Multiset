@@ -30,5 +30,25 @@ int main()
     assert(q.exists(70));
     cout << q;
 
+    // Constructorul de copiere
+    Multiset<int> k(q);
+    assert(k.exists(40));
+    assert(q.exists(50));
+    assert(q.exists(60));
+    assert(q.exists(70));
+    cout << k;
+
+    // Metoda pentru existenta unui nod
+    k.add(100);
+    assert(k.exists(100));
+    cout << k;
+
+    // Metoda care intoarce numarul de aparitii
+    q.add(100);
+    q.add(100);
+    q.add(100);
+    assert(q.aparitions(100));
+    cout << q.aparitions(100) << '\n';
+
     return 0;
 }
