@@ -16,11 +16,17 @@ private:
 	void copy(Nod<T>*, Nod<T>*); // functie recursiva care copiaza elementele din nodul constant in nodul trimis prin referinta
 	void insertrec(Nod<T>*, T); // parcurgerea AVL-ului recursiv pentru inserare
 	void search_rec(Nod<T>*, T, unsigned&) const; // cautarea nodului in Multiset recursiv
+	void distinct_rec(Nod<T>*, int&) const;
 
 	void L_left_rotate(Nod<T>*); // Left rotate pentru fiul stang
 	void L_right_rotate(Nod<T>*); // Right rotate pentru fiul stang
 	void R_left_rotate(Nod<T>*); // Left rotate pentru fiul drept
 	void R_right_rotate(Nod<T>*); // Right rotate pentru fiul drept
+
+	void balance_left(Nod<T>*, T); // Balanseaza subarborele stang al radacinii
+	void balance_right(Nod<T>*, T); // Balanseaza subarborele drept al radacinii
+
+	Nod<T>* in_order(Nod<T>*) const; // Returneaza valoarea celui mai mic nod(frunza) din subarborele drept
 
 public:
 	Multiset();
@@ -31,6 +37,7 @@ public:
 	bool exists(T) const; // verifica daca un element exista in multiset
 	Nod<T>* get_root() const { return this->root; };
 	unsigned aparitions(T) const; // intoarce numarul de aparitii din multiset
+	unsigned distinct_elements() const;
 
 	friend void update_height(Nod<T>*);
 	const Multiset<T, F>& operator=(const Multiset<T, F>&);
@@ -99,6 +106,15 @@ unsigned Multiset<T, F>::aparitions(T x) const
 }
 
 template<class T, class F>
+unsigned Multiset<T, F>::distinct_elements() const
+{
+	int nr = 0;
+	Nod<T>* aux = this->root;
+	this->distinct_rec(aux, nr);
+	return nr;
+}
+
+template<class T, class F>
 const Multiset<T, F>& Multiset<T, F>::operator=(const Multiset<T, F>& source)
 {
 	if (this != &source) // sa nu atribuim acelasi AVL
@@ -149,6 +165,124 @@ void Multiset<T, F>::R_right_rotate(Nod<T>* r) // il roteste pe x in locul lui y
 	update_height(y->get_right());
 	update_height(y);
 	update_height(x);
+}
+
+template <class T, class F>
+void Multiset<T, F>::balance_left(Nod<T>* p, T x)
+{
+	if (p == this->root) // Daca nodul curent este radacina, ne folosim de un nod auxiliar pentru a-l balansa
+	{
+		Nod<T>* rad_partiala = new Nod<T>(p->get_info() + 1, p->get_height() + 1);
+		rad_partiala->set_left(p);
+
+		balance_left(rad_partiala, x);
+		this->root = rad_partiala->get_left();
+
+		rad_partiala->set_left(nullptr);
+		delete rad_partiala;
+		update_height(root);
+	}
+// Pentru ca nu pot modifica adresa nodului transmis in aceasta functie, voi modifica nodurile left si right ale nodului curent
+// (de asta folosesc aux mai jos, pentru a verifica daca se mentine structura de AVL pentru fiul stang si fiul drept)
+	if (p->get_left())
+	{
+		Nod<T>* aux = p->get_left(); // fiul stang
+
+		int balance = aux->get_left()->get_height() - aux->get_right()->get_height(); // daca balance depaseste intervalul [-1, 1], trebuiesc facute rotatii
+
+		if (aux->get_left())
+		{
+			// Left Left Case Rotation (pentru fiul stang)
+			if (balance > 1 && F::lesseq(x, aux->get_left()->get_info()))
+				this->L_right_rotate(p);
+
+			// Left Right Case Rotation (pentru fiul stang)
+			else if (balance > 1 && F::lesseq(aux->get_left()->get_info(), x))
+			{
+				this->L_left_rotate(aux);
+				this->L_right_rotate(p);
+			}
+		}
+
+		if (aux->get_right())
+		{
+			// Right Right Case Rotation (pentru fiul stang)
+			if (balance < -1 && F::lesseq(aux->get_right()->get_info(), x))
+				this->L_left_rotate(p);
+
+			// Right Left Case Rotation (pentru fiul stang)
+			else if (balance < -1 && F::lesseq(x, aux->get_right()->get_info()))
+			{
+				this->L_left_rotate(p);
+				this->L_left_rotate(p->get_left());
+				this->L_right_rotate(p);
+			}
+		}
+	}
+}
+
+template<class T, class F>
+void Multiset<T, F>::balance_right(Nod<T>* p, T x)
+{
+	if (p == this->root)
+	{
+		Nod<T>* rad_partiala = new Nod<T>(p->get_info() + 1, p->get_height() + 1);
+		rad_partiala->set_right(p);
+
+		balance_right(rad_partiala, x);
+		this->root = rad_partiala->get_right();
+
+		rad_partiala->set_right(nullptr);
+		delete rad_partiala;
+		update_height(root);
+	}
+	// analog, pentru fiul drept
+	if (p->get_right())
+	{
+		Nod<T>* aux = p->get_right();
+
+		int balance = aux->get_left()->get_height() - aux->get_right()->get_height();
+
+		if (aux->get_left())
+		{
+			// Left Left Case Rotation (pentru fiul drept)
+			if (balance > 1 && F::lesseq(x, aux->get_left()->get_info()))
+				this->R_right_rotate(p);
+
+			// Left Right Case Rotation (pentru fiul drept)
+			else if (balance > 1 && F::lesseq(aux->get_left()->get_info(), x))
+			{
+				this->R_right_rotate(p);
+				this->R_right_rotate(p->get_right());
+				this->R_left_rotate(p);
+			}
+		}
+
+		if (aux->get_right())
+		{
+			// Right Right Case Rotation (pentru fiul drept)
+			if (balance < -1 && F::lesseq(aux->get_right()->get_info(), x))
+				this->R_left_rotate(p);
+
+			// Right Left Case Rotation (pentru fiul drept)
+			else if (balance < -1 && F::lesseq(x, aux->get_right()->get_info()))
+			{
+				this->R_right_rotate(p->get_right());
+				this->R_left_rotate(p);
+			}
+		}
+	}
+}
+
+template<class T, class F>
+Nod<T>* Multiset<T, F>::in_order(Nod<T>* p) const
+{
+	if (p->get_left()) // exista nodul stang
+		in_order(p->get_left());
+	else
+	{
+		return p;
+	}
 }
 
 template <class T, class F>
@@ -223,81 +357,8 @@ void Multiset<T, F>::insertrec(Nod<T>* p, T x)  // parcurgere recursiva
 	}
 	p->set_height(max(p->get_left()->get_height(), p->get_right()->get_height()) + 1); // setez height-ul fiecarui nod
 
-	// Pentru ca nu pot modifica adresa nodului transmis in aceasta functie, voi modifica nodurile left si right ale nodului curent
-	// (de asta folosesc aux mai jos, pentru a verifica daca se mentine structura de AVL pentru fiul stang si fiul drept)
-	// Aceasta metoda nu aplica rebalancing pentru radacina (ceea ce nu afecteaza complexitatea)
-	if (p->get_left())
-	{
-		Nod<T>* aux = p->get_left(); // fiul stang
-
-		int balance = aux->get_left()->get_height() - aux->get_right()->get_height(); // daca balance depaseste intervalul [-1, 1], trebuiesc facute rotatii
-
-		if (aux->get_left())
-		{
-			// Left Left Case Rotation (pentru fiul stang)
-			if (balance > 1 && F::lesseq(x, aux->get_left()->get_info()))
-				this->L_right_rotate(p);
-
-			// Left Right Case Rotation (pentru fiul stang)
-			else if (balance > 1 && F::lesseq(aux->get_left()->get_info(), x))
-			{
-				this->L_left_rotate(aux);
-				this->L_right_rotate(p);
-			}
-		}
-
-		if (aux->get_right())
-		{
-			// Right Right Case Rotation (pentru fiul stang)
-			if (balance < -1 && F::lesseq(aux->get_right()->get_info(), x))
-				this->L_left_rotate(p);
-
-			// Right Left Case Rotation (pentru fiul stang)
-			else if (balance < -1 && F::lesseq(x, aux->get_right()->get_info()))
-			{
-				this->L_left_rotate(p);
-				this->L_left_rotate(p->get_left());
-				this->L_right_rotate(p);
-			}
-		}
-	}
-
-	// analog, pentru fiul drept
-	if (p->get_right())
-	{
-		Nod<T>* aux = p->get_right();
-
-		int balance = aux->get_left()->get_height() - aux->get_right()->get_height();
-
-		if (aux->get_left())
-		{
-			// Left Left Case Rotation (pentru fiul drept)
-			if (balance > 1 && F::lesseq(x, aux->get_left()->get_info()))
-				this->R_right_rotate(p);
-
-			// Left Right Case Rotation (pentru fiul drept)
-			else if (balance > 1 && F::lesseq(aux->get_left()->get_info(), x))
-			{
-				this->R_right_rotate(p);
-				this->R_right_rotate(p->get_right());
-				this->R_left_rotate(p);
-			}
-		}
-
-		if (aux->get_right())
-		{
-			// Right Right Case Rotation (pentru fiul drept)
-			if (balance < -1 && F::lesseq(aux->get_right()->get_info(), x))
-				this->R_left_rotate(p);
-
-			// Right Left Case Rotation (pentru fiul drept)
-			else if (balance < -1 && F::lesseq(x, aux->get_right()->get_info()))
-			{
-				this->R_right_rotate(p->get_right());
-				this->R_left_rotate(p);
-			}
-		}
-	}
+		balance_left(p, x);
+		balance_right(p, x);
 }
 
 template<class T, class F>
@@ -315,6 +376,17 @@ void Multiset<T, F>::search_rec(Nod<T>* r, T x, unsigned& nr) const
 			search_rec(r->get_right(), x, nr);
 		else
 			search_rec(r->get_left(), x, nr);
+	}
+}
+
+template<class T, class F>
+void Multiset<T, F>::distinct_rec(Nod<T>* r, int& nr) const
+{
+	if (r)
+	{
+		nr++;
+		distinct_rec(r->get_left(), nr);
+		distinct_rec(r->get_right(), nr);
 	}
 }
 
@@ -347,12 +419,133 @@ void Multiset<T, F>::add(T x)
 template <class T, class F>
 void Multiset<T, F>::remove(T x, Nod<T>* r)
 {
-	if (!r)
+	if (!r) // Exceptia pentru stergere din multiset gol
+		throw("Can not remove an element from an empty Multiset!\n");
+
+	if (F::less(x, r->get_info())) // x < nodul curent -> se afla in subarborele stang
 	{
-		cout << "Can not remove from an empty Multiset!\n";
-		return;
+		if (F::equals(x, r->get_left()->get_info())) // am gasit nodul pe care vrem sa-l stergem
+		{
+			Nod<T>* left_son = r->get_left();
+			if (!left_son->get_left() || !left_son->get_right()) // cazul cu niciun fiu sau cu un fiu
+			{
+				if (!left_son->get_left() && !left_son->get_right()) // cazul cu niciun fiu
+				{
+					r->set_left(nullptr);
+					delete left_son;
+					update_height(r);
+				}
+				else // cazul cu un fiu
+				{
+					if (left_son->get_left()) // fiul stang
+					{
+						Nod<T>* aux = left_son->get_left();
+						r->set_left(aux);
+						left_son->set_left(nullptr);
+						delete left_son;
+						update_height(aux);
+						update_height(r);
+					}
+					else // fiul drept
+					{
+						Nod<T>* aux = left_son->get_right();
+						r->set_left(aux);
+						left_son->set_right(nullptr);
+						delete left_son;
+						update_height(aux);
+						update_height(r);
+					}
+				}
+			}
+
+			else// cazul cu doi fii
+			{
+				Nod<T>* i = in_order(left_son->get_right());
+				T x = i->get_info();
+				remove(x, left_son);
+				left_son->set_info(x);
+
+				update_height(left_son);
+			}
+
+			balance_left(r, x);
+			balance_right(r, x);
+		}
+		else
+		{
+			this->remove(x, r->get_left());
+			balance_left(r, x);
+			balance_right(r, x);
+		}
 	}
 
+	else if(F::less(r->get_info(), x)) // x > nodul curent -> se afla in subarborele drept
+	{
+		if (F::equals(x, r->get_right()->get_info())) // am gasit nodul pe care vrem sa-l stergem
+		{
+			Nod<T>* right_son = r->get_right();
+			if (!right_son->get_left() || !right_son->get_right()) // cazul cu niciun fiu sau cu un fiu
+			{
+				if (!right_son->get_left() && !right_son->get_right()) // cazul cu niciun fiu
+				{
+					r->set_right(nullptr);
+					delete right_son;
+					update_height(r);
+				}
+				else // cazul cu un fiu
+				{
+					if (right_son->get_left()) // fiul stang
+					{
+						Nod<T>* aux = right_son->get_left();
+						r->set_left(aux);
+						right_son->set_left(nullptr);
+						delete right_son;
+						update_height(aux);
+						update_height(r);
+					}
+					else // fiul drept
+					{
+						Nod<T>* aux = right_son->get_right();
+						r->set_right(aux);
+						right_son->set_right(nullptr);
+						delete right_son;
+						update_height(aux);
+						update_height(r);
+					}
+				}
+			}
+			else // cazul cu doi fii
+			{
+				Nod<T>* i = in_order(right_son->get_right());
+				T x = i->get_info();
+				remove(x, right_son);
+				right_son->set_info(x);
+				
+				update_height(right_son);
+			}
+
+			balance_left(r, x);
+			balance_right(r, x);
+		}
+		else
+		{
+			this->remove(x, r->get_right());
+			balance_left(r, x);
+			balance_right(r, x);
+		}
+	}
+
+	else // altfel nodul e chiar radacina
+	{
+		Nod<T>* aux = new Nod<T>(r->get_info() + 1, r->get_height() + 1);
+		aux->set_left(r);
+		this->remove(x, aux);
+		this->root = aux->get_left();
+		aux->set_left(nullptr);
+		aux->set_right(nullptr);
+		delete aux;
+		update_height(root);
+	}
 }
 
 template <class T, class F>

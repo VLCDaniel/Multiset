@@ -1,2 +1,5 @@
 ﻿  main.cpp
+C:\Users\vlasc\OneDrive\Desktop\Multiset\Comparator.h(31,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\vlasc\OneDrive\Desktop\Multiset\Comparator.h(32,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\vlasc\OneDrive\Desktop\Multiset\Multiset.h(286): warning C4715: 'Multiset<int,Comparator<int> >::in_order': not all control paths return a value
   tema poo - 2.vcxproj -> C:\Users\vlasc\OneDrive\Desktop\Multiset\Debug\tema poo - 2.exe

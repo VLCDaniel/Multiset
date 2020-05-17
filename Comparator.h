@@ -1,21 +1,16 @@
 #pragma once
 #include "Nod.h"
+#include <algorithm>
 
 template <class T>
 class Comparator
 {
 public:
-	static bool equals(T, T);
+	static bool equals(T x, T y) { return x == y; }
 	static bool greater(T, T);
 	static bool less(T, T);
-	static bool lesseq(T, T);
+	static bool lesseq(T x, T y) { return x <= y; }
 };
-
-template <class T>
-bool Comparator<T>::equals(T x, T y)
-{
-	return x == y;
-}
 
 template <class T>
 bool Comparator<T>::greater(T x, T y)
@@ -29,28 +24,12 @@ bool Comparator<T>::less(T x, T y)
 	return x < y;
 }
 
-template <class T>
-bool Comparator<T>::lesseq(T x, T y)
-{
-	return x <= y;
-}
 
 // Specializarea clasei pentru double
-template<> class Comparator<double>
+bool Comparator<double>::equals(double x, double y)
 {
-public:
-	static bool equals(double x, double y)
-	{
-		return (int)x == (int)y;
-	}
+	float a = x - float(x);
+	float b = y - float(y);
+	return abs(abs(a) - abs(b)) < 0.01 * (abs(x) > abs(y) ? abs(y) : abs(x));
+}
 
-	static bool less(double x, double y)
-	{
-		return x < y;
-	}
-
-	static bool lesseq(double x, double y)
-	{
-		return x <= y;
-	}
-};

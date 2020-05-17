@@ -17,7 +17,7 @@ int main()
     assert(p.exists(10));
     p.add(15);
     assert(p.exists(15));
-    cout << p;
+    //cout << p;
 
     // Right Right Rotation (pentru fiul drept)
     q.add(40);
@@ -28,7 +28,7 @@ int main()
     assert(q.exists(60));
     q.add(70);
     assert(q.exists(70));
-    cout << q;
+    //cout << q;
 
     // Constructorul de copiere
     Multiset<int> k(q);
@@ -36,26 +36,26 @@ int main()
     assert(q.exists(50));
     assert(q.exists(60));
     assert(q.exists(70));
-    cout << k;
+    //cout << k;
 
     // Metoda pentru existenta unui nod
     k.add(100);
     assert(k.exists(100));
-    cout << k;
+    //cout << k;
 
     // Metoda care intoarce numarul de aparitii
     q.add(100);
     q.add(100);
     q.add(100);
-    assert(q.aparitions(100));
-    cout << q.aparitions(100) << '\n';
+    assert(q.aparitions(100) == 3);
+    //cout << q.aparitions(100) << '\n';
 
     // Specializarea Comparatorului pentru double
     Multiset<double> d;
-    d.add(1.37);
-    d.add(1.52);
-    assert(d.aparitions(1.37) == 2);
-    cout << d;
+    d.add(-9999.14);
+    d.add(4.14);
+    assert(d.aparitions(3.15) == 2);
+    //cout << d;
 
     // Operatorul de atribuire
     p = k;
@@ -64,7 +64,66 @@ int main()
     assert(p.exists(60));
     assert(p.exists(70));
     assert(p.exists(100));
-    cout << p;
+    //cout << p << '\n';
+
+    //// Metoda Remove
+    Multiset<int> f;
+    // Exceptia pentru stergere din multiset gol
+    try
+    {
+        f.remove(10, f.get_root());
+    }
+    catch (const char* msg)
+    {
+        cout << msg << '\n';
+    }
+
+    // Stergerea unui element fara copii
+    f.add(10);
+    f.add(20);
+    f.remove(20, f.get_root());
+    assert(!f.exists(20));
+    //cout << f << '\n';
+
+    // Stergerea unui element cu un fiu stang
+    f.add(5);
+    f.add(2);
+    f.add(1);
+    f.remove(2, f.get_root());
+    assert(!f.exists(2));
+    //cout << f << '\n';
+
+    //// Stergerea unui element cu un fiu drept
+    f.add(20);
+    f.remove(10, f.get_root());
+    assert(!f.exists(10));
+    //cout << f << '\n';
+
+    // Caz in care stergem un element cu un singur fiu si se rebalanseaza AVL-ul
+    Multiset<int> test;
+    test.add(100);
+    test.add(50);
+    test.add(25);
+    test.add(60);
+    test.add(10);
+    test.add(55);
+    test.add(70);
+    test.add(80);
+    test.remove(25, test.get_root());
+    assert(!test.exists(25));
+    //cout << test;
+
+    // Stergerea unui element cu doi fii
+    test.add(125);
+    test.remove(80, test.get_root());
+    assert(!test.exists(80));
+    //cout << test;
+
+    // Stergerea radacinii
+    test.remove(60, test.get_root());
+    assert(!test.exists(60));
+    //cout << test;
+
 
     return 0;
 }

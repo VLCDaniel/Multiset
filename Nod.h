@@ -10,7 +10,7 @@ private:
 
 public:
 
-	Nod() = default;
+	Nod() : info(0), left(nullptr), right(nullptr), height(1) {};
 	Nod(T x, int y) : info(x), height(y) { this->left = nullptr; this->right = nullptr; };
 	void set_info(T);
 	void set_height(int);
