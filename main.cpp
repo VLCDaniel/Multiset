@@ -50,5 +50,21 @@ int main()
     assert(q.aparitions(100));
     cout << q.aparitions(100) << '\n';
 
+    // Specializarea Comparatorului pentru double
+    Multiset<double> d;
+    d.add(1.37);
+    d.add(1.52);
+    assert(d.aparitions(1.37) == 2);
+    cout << d;
+
+    // Operatorul de atribuire
+    p = k;
+    assert(p.exists(40));
+    assert(p.exists(50));
+    assert(p.exists(60));
+    assert(p.exists(70));
+    assert(p.exists(100));
+    cout << p;
+
     return 0;
 }

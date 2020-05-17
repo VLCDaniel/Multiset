@@ -33,6 +33,7 @@ public:
 	unsigned aparitions(T) const; // intoarce numarul de aparitii din multiset
 
 	friend void update_height(Nod<T>*);
+	const Multiset<T, F>& operator=(const Multiset<T, F>&);
 	friend ostream& operator<<(ostream& out, const Multiset<T, F>& M)
 	{
 		M.RSD(M.root, out);
@@ -95,6 +96,20 @@ unsigned Multiset<T, F>::aparitions(T x) const
 	Nod<T>* aux = this->root;
 	this->search_rec(aux, x, nr);
 	return nr;
+}
+
+template<class T, class F>
+const Multiset<T, F>& Multiset<T, F>::operator=(const Multiset<T, F>& source)
+{
+	if (this != &source) // sa nu atribuim acelasi AVL
+	{
+		Nod<T>* aux = this->root;
+		this->RSD_delete(aux);
+		aux = new Nod<T>(source.get_root()->get_info(), source.get_root()->get_height());
+		this->root = aux; // creez radacina
+		this->copy(this->root, source.get_root()); // copiez elementele recursiv
+	}
+	return *this;
 }
 
 template <class T>

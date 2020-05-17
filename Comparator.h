@@ -34,3 +34,23 @@ bool Comparator<T>::lesseq(T x, T y)
 {
 	return x <= y;
 }
+
+// Specializarea clasei pentru double
+template<> class Comparator<double>
+{
+public:
+	static bool equals(double x, double y)
+	{
+		return (int)x == (int)y;
+	}
+
+	static bool less(double x, double y)
+	{
+		return x < y;
+	}
+
+	static bool lesseq(double x, double y)
+	{
+		return x <= y;
+	}
+};

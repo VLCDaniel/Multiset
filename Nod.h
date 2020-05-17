@@ -17,9 +17,9 @@ public:
 	void set_right(Nod*);
 	void set_left(Nod*);
 	int get_height();
-	T get_info();
-	Nod* get_left();
-	Nod* get_right();
+	T get_info() const;
+	Nod* get_left() const;
+	Nod* get_right() const;
 };
 
 template<class T>
@@ -57,19 +57,19 @@ void Nod<T>::set_right(Nod* N)
 }
 
 template <class T>
-T Nod<T>::get_info()
+T Nod<T>::get_info() const
 {
 	return this->info;
 }
 
 template <class T>
-Nod<T>* Nod<T>::get_left()
+Nod<T>* Nod<T>::get_left() const
 {
 	return this->left;
 }
 
 template <class T>
-Nod<T>* Nod<T>::get_right()
+Nod<T>* Nod<T>::get_right() const
 {
 	return this->right;
 }
