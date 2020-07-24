@@ -28,8 +28,8 @@ bool Comparator<T>::less(T x, T y)
 // Specializarea clasei pentru double
 bool Comparator<double>::equals(double x, double y)
 {
-	float a = x - float(x);
-	float b = y - float(y);
+	double a = x - float(x);
+	double b = y - float(y);
 	return abs(abs(a) - abs(b)) < 0.01 * (abs(x) > abs(y) ? abs(y) : abs(x));
 }
 

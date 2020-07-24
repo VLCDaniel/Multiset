@@ -13,6 +13,7 @@ private:
 
 	void RSD(Nod<T>*, ostream&) const; // parcurgere recursiva Radacina - Stanga - Dreapta (pentru afisare)
 	void RSD_delete(Nod<T>*); // parcurcere recursiva care sterge nodurile
+	void RSD_distinct(Multiset<T>, Nod<T>*, unsigned&);
 	void copy(Nod<T>*, Nod<T>*); // functie recursiva care copiaza elementele din nodul constant in nodul trimis prin referinta
 	void insertrec(Nod<T>*, T); // parcurgerea AVL-ului recursiv pentru inserare
 	void search_rec(Nod<T>*, T, unsigned&) const; // cautarea nodului in Multiset recursiv
@@ -36,8 +37,9 @@ public:
 	void remove(T, Nod<T>*); // sterge un element din multiset
 	bool exists(T) const; // verifica daca un element exista in multiset
 	Nod<T>* get_root() const { return this->root; };
-	unsigned aparitions(T) const; // intoarce numarul de aparitii din multiset
-	unsigned distinct_elements() const;
+	unsigned aparitions(T) const; // intoarce numarul de aparitii din multiset al unui element
+	unsigned distinct_elements();
+	void remove_aparitions(T); // sterge toate aparitiile nodului
 
 	friend void update_height(Nod<T>*);
 	const Multiset<T, F>& operator=(const Multiset<T, F>&);
@@ -57,6 +59,18 @@ void Multiset<T, F>::RSD_delete(Nod<T>* r)
 		RSD_delete(r->get_left());
 		RSD_delete(r->get_right());
 		delete r;
+	}
+}
+
+template<class T, class F>
+void Multiset<T, F>::RSD_distinct(Multiset<T> m, Nod<T>* r, unsigned& nr)
+{
+	if (r)
+	{
+		if (!m.exists(r->get_info()))
+			nr++;
+		RSD_distinct(m, r->get_left(), nr);
+		RSD_distinct(m, r->get_right(), nr);
 	}
 }
 
@@ -106,12 +120,21 @@ unsigned Multiset<T, F>::aparitions(T x) const
 }
 
 template<class T, class F>
-unsigned Multiset<T, F>::distinct_elements() const
+unsigned Multiset<T, F>::distinct_elements()
 {
-	int nr = 0;
-	Nod<T>* aux = this->root;
-	this->distinct_rec(aux, nr);
+	unsigned nr = 0;
+	Multiset<T> aux;
+	this->RSD_distinct(aux, this->root, nr);
 	return nr;
+}
+
+template<class T, class F>
+void Multiset<T, F>::remove_aparitions(T x)
+{
+	for (unsigned i = 0; i < this->aparitions(x); i++)
+	{
+		this->remove(x, this->root);
+	}
 }
 
 template<class T, class F>
@@ -277,12 +300,16 @@ void Multiset<T, F>::balance_right(Nod<T>* p, T x)
 template<class T, class F>
 Nod<T>* Multiset<T, F>::in_order(Nod<T>* p) const
 {
-	if (p->get_left()) // exista nodul stang
-		in_order(p->get_left());
+	if (p->get_left())
+		if (p->get_left()->get_left()) // exista nodul stang
+		{
+			in_order(p->get_left());
+			p->set_height(p->get_height() - 1);
+		}
+		else
+			return p;
 	else
-	{
 		return p;
-	}
 }
 
 template <class T, class F>
@@ -416,6 +443,7 @@ void Multiset<T, F>::add(T x)
 	this->insertrec(this->root, x);
 }
 
+
 template <class T, class F>
 void Multiset<T, F>::remove(T x, Nod<T>* r)
 {
@@ -479,7 +507,7 @@ void Multiset<T, F>::remove(T x, Nod<T>* r)
 		}
 	}
 
-	else if(F::less(r->get_info(), x)) // x > nodul curent -> se afla in subarborele drept
+	else if (F::less(r->get_info(), x)) // x > nodul curent -> se afla in subarborele drept
 	{
 		if (F::equals(x, r->get_right()->get_info())) // am gasit nodul pe care vrem sa-l stergem
 		{
@@ -520,7 +548,7 @@ void Multiset<T, F>::remove(T x, Nod<T>* r)
 				T x = i->get_info();
 				remove(x, right_son);
 				right_son->set_info(x);
-				
+
 				update_height(right_son);
 			}
 
